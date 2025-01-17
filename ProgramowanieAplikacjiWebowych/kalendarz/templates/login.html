@@ -1,0 +1,14 @@
+{% csrf_token %}
+
+<form method="get" action="http://127.0.0.1:8000/login">
+    <textarea name="login" id="" cols="30" rows="1"></textarea>
+    <textarea name="password" id="" cols="30" rows="1"></textarea>
+    <input type="submit">    
+</form>
+
+<form method="post" action="register">
+    <textarea name="username" id="" cols="30" rows="1"></textarea>
+    <textarea name="password" id="" cols="30" rows="1"></textarea>
+    <textarea name="email" id="" cols="30" rows="1"></textarea>
+    <input type="submit">    
+</form>

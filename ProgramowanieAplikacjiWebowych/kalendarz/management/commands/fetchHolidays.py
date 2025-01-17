@@ -2,6 +2,10 @@ import requests
 from datetime import datetime
 from django.core.management.base import BaseCommand
 from ...models import Holiday,Country
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 class Command(BaseCommand):
 
@@ -21,7 +25,7 @@ class Command(BaseCommand):
                 countriesString = ""
         
 
-        API_KEY =  ''
+        API_KEY =  os.environ.get('API_KEY')
         
         BASE_URL = 'https://holidayapi.com/v1/holidays'
 

@@ -1,11 +1,14 @@
 import requests
 from django.core.management.base import BaseCommand
 from ...models import Country
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
 class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
-        API_KEY = ''
+        API_KEY = os.environ.get('API_KEY')
         BASE_URL = 'https://holidayapi.com/v1/countries'
         params = {
             "key": API_KEY, 

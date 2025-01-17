@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Holidays</title>
+</head>
+<body>
+    <h1>Update Holidays in the Database</h1>
+    <form method="POST" action="{% url 'call_api' %}">
+        {% csrf_token %}
+        <button type="submit">Fetch and Update Holidays</button>
+    </form>
+</body>
+</html>
