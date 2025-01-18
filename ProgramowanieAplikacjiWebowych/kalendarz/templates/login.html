@@ -1,14 +1,67 @@
-{% csrf_token %}
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strona logowania</title>
 
-<form method="get" action="http://127.0.0.1:8000/login">
-    <textarea name="login" id="" cols="30" rows="1"></textarea>
-    <textarea name="password" id="" cols="30" rows="1"></textarea>
-    <input type="submit">    
-</form>
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+</head>
+<body>
+    <div class="form-container">
+        <h2>Logowanie</h2>
+        <form id="loginForm">
+            {% csrf_token %}
+            <div class="input-group">
+                <label for="login">Nazwa użytkownika lub email</label>
+                <input type="text" id="login" name="login" placeholder="Wpisz nazwę użytkownika" required>
+            </div>
+            <div class="input-group">
+                <label for="password">Hasło</label>
+                <input type="password" id="password" name="password" placeholder="Wpisz hasło" required>
+            </div>
+            <button type="submit">Zaloguj się</button>
+        </form>
+    </div>
 
-<form method="post" action="register">
-    <textarea name="username" id="" cols="30" rows="1"></textarea>
-    <textarea name="password" id="" cols="30" rows="1"></textarea>
-    <textarea name="email" id="" cols="30" rows="1"></textarea>
-    <input type="submit">    
-</form>
+    <script>
+        
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault(); 
+            
+
+            const login = document.getElementById('login').value;
+            const password = document.getElementById('password').value;
+            
+
+            const loginData = {
+                login: login,
+                password: password,
+            };
+            
+
+            console.log('Wysłane dane:', JSON.stringify(loginData));
+
+            fetch('/login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify(loginData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Odpowiedź serwera:', data);
+            })
+            .catch(error => {
+                console.error('Błąd:', error);
+            });
+            
+        });
+    </script>
+</body>
+</html>

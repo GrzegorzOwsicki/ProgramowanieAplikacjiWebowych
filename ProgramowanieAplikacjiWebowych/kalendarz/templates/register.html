@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strona Rejestracji</title>
+
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+</head>
+<body>
+    <div class="form-container">
+        <h2>Rejestracja</h2>
+        <form id="registrationForm">
+            {% csrf_token %}
+            <div class="input-group">
+                <label for="username">Nazwa użytkownika</label>
+                <input type="text" id="username" name="username" placeholder="Wpisz nazwę użytkownika" required>
+                <span id="usernameError" style="color:red;"></span>
+            </div>
+            <div class="input-group">
+                <label for="email">email</label>
+                <input type="email" id="email" name="email" placeholder="Wpisz hasło" required>
+                <span id="emailError" style="color:red;"></span>
+            </div>
+            <div class="input-group">
+                <label for="password">Hasło</label>
+                <input type="password" id="password1" name="password1" placeholder="Wpisz hasło" required>
+            </div>
+            <div class="input-group">
+                <label for="password">Powtórz Hasło</label>
+                <input type="password" id="password2" name="password2" placeholder="Powtórz hasło" required>
+                <span id="passwordError" style="color:red;"></span>
+            </div>
+
+            <div class="input-group">
+                <label for="country">Kraj</label>
+                <select id="country" name="country" required>
+                    <option value="">Ładowanie...</option>
+                </select>
+            </div>
+
+            <button type="submit">Zarejestruj</button>
+        </form>
+    </div>
+
+    <script>
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            function loadCountries() {
+
+
+                const countryDropdown = document.getElementById('country');
+                const countryError = document.createElement('span');
+                countryError.style.color = 'red';
+                countryDropdown.parentNode.appendChild(countryError);
+
+                fetch("/getcountries/")
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error("Nie udało się pobrać listy krajów");
+                        }
+                        return response.json();
+                    })
+                    .then(countries => {
+                        console.log(countries)
+                        countryDropdown.innerHTML = '<option value="">Wybierz kraj</option>'; // Wyczyść dropdown
+                        countries.forEach(country => {
+                            const option = document.createElement("option");
+                            option.value = country.code;
+                            option.textContent = country.country;
+                            countryDropdown.appendChild(option);
+                        });
+                    })
+                    .catch(error => {
+                        console.error("Błąd pobierania krajów:", error);
+                        countryError.textContent = "Nie udało się załadować krajów.";
+                    });
+            }
+
+
+            document.getElementById('registrationForm').addEventListener('submit', function(event) {
+                event.preventDefault(); 
+                
+
+                const username  = document.getElementById('username').value;
+                const email     = document.getElementById('email').value;
+                const password1 = document.getElementById('password1').value;
+                const password2 = document.getElementById('password2').value;
+                const country   = document.getElementById('country').value;
+                
+
+                const registrationData = {
+                    username: username,
+                    email:    email,
+                    password: password1,
+                    country:  country,
+                };
+                
+                if (password1 != password2){
+                    document.getElementById('passwordError').textContent = "Hasła nie są takie same!";
+                    return
+                }
+
+                console.log('Wysłane dane:', JSON.stringify(registrationData));
+                
+
+                fetch('/register/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify(registrationData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Odpowiedź serwera:', data);
+                    if (data.username_in_use){
+                        document.getElementById('usernameError').textContent = "Nazwa użytkownika jest juz zajeta";
+                    }
+                    if (data.email_in_use){
+                        document.getElementById('emailError').textContent = "Email jest juz zajety";
+                    }
+                })
+                .catch(error => {
+                    
+                    console.error('Błąd:', error);
+                });
+            });
+            document.addEventListener('DOMContentLoaded', loadCountries);
+        
+    </script>
+</body>
+</html>
