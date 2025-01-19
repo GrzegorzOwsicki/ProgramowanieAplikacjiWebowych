@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strona Główna</title>
+    <link rel="stylesheet" href="{% static 'home.css' %}">
+</head>
+<body>
+    <div class="container">
+        {% if user.is_authenticated %}
+            <div class="auth-container">
+                <!-- Dane użytkownika -->
+                <div class="user-info">
+                    <h2>Dane Użytkownika</h2>
+                    <p><strong>Nazwa użytkownika:</strong> {{ user.username }}</p>
+                    <p><strong>Email:</strong> {{ user.email }}</p>
+                    <p><strong>Kraj:</strong> {{ user.country }}</p>
+                </div>
+
+                <!-- Lista świąt -->
+                <div class="holiday-list">
+                    <h2>Lista Świąt</h2>
+                    <ul>
+                        {% for holiday in holidays %}
+                            <li><strong>{{ holiday.name }}</strong> - {{ holiday.date }}</li>
+                        {% endfor %}
+                        {% if not holidays %}
+                            <li>Brak świąt do wyświetlenia.</li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <div class="holiday-list">
+                    <h2>Wydarzenia urzytkownika</h2>
+                    <ul>
+                        {% for holiday in holidays %}
+                            <li><strong>{{ holiday.name }}</strong> - {{ holiday.date }}</li>
+                        {% endfor %}
+                        {% if not holidays %}
+                            <li>Brak świąt do wyświetlenia.</li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        {% else %}
+            <!-- Linki dla niezalogowanych użytkowników -->
+            <h1>Witaj na naszej stronie!</h1>
+            <p><a href="/redirectLogin/">Zaloguj się</a> lub <a href="/redirectRegister/">Zarejestruj się</a>, aby zobaczyć więcej.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

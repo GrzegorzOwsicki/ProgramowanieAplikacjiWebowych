@@ -121,6 +121,9 @@
                     if (data.email_in_use){
                         document.getElementById('emailError').textContent = "Email jest juz zajety";
                     }
+                    if (data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                    }
                 })
                 .catch(error => {
                     
