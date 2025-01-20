@@ -17,37 +17,238 @@
                     <p><strong>Nazwa użytkownika:</strong> {{ user.username }}</p>
                     <p><strong>Email:</strong> {{ user.email }}</p>
                     <p><strong>Kraj:</strong> {{ user.country }}</p>
+                    <button><strong><a href="/logout/">Wyloguj</a></strong></button>
                 </div>
 
                 <!-- Lista świąt -->
                 <div class="holiday-list">
                     <h2>Lista Świąt</h2>
-                    <ul>
-                        {% for holiday in holidays %}
-                            <li><strong>{{ holiday.name }}</strong> - {{ holiday.date }}</li>
-                        {% endfor %}
-                        {% if not holidays %}
-                            <li>Brak świąt do wyświetlenia.</li>
-                        {% endif %}
-                    </ul>
+                    <label>Filtry</label>
+                    <form id="filters">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            <label for="country">Kraj</label>
+                            <select id="country" name="country" required>
+                                <option value="">Ładowanie...</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="public">Święta ustawowo wolne</label>
+                            <input type="checkbox" id="public" name="public" value="true">
+                        </div>
+                                               
+                        <button type="submit">Filtruj</button>
+                    </form>
+                        <ul id="holidays-list">
+                            <!-- Lista świąt wczytana dynamicznie za pomocą JavaScript -->
+                        </ul>
                 </div>
                 <div class="holiday-list">
-                    <h2>Wydarzenia urzytkownika</h2>
-                    <ul>
-                        {% for holiday in holidays %}
-                            <li><strong>{{ holiday.name }}</strong> - {{ holiday.date }}</li>
-                        {% endfor %}
-                        {% if not holidays %}
-                            <li>Brak świąt do wyświetlenia.</li>
-                        {% endif %}
-                    </ul>
+                    <h2>Lista Wydarzeń urzytkownika</h2>
+                        <form id="addUserHoliday">
+                            {% csrf_token %}
+                            <div class="input-group">
+                                <label for="holiday">Wydarzenie</label>
+                                <input type="text" id="holiday" name="holiday" placeholder="" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="data">Data</label>
+                                <input type="date" id="data" name="data" placeholder="" required>
+                            </div>
+                            <button type="submit">Dodaj wydarzenie</button>
+                        </form>
+                        <ul id="user-holidays-list">
+                            <!-- Lista świąt wczytana dynamicznie za pomocą JavaScript -->
+                        </ul>
                 </div>
             </div>
         {% else %}
             <!-- Linki dla niezalogowanych użytkowników -->
-            <h1>Witaj na naszej stronie!</h1>
             <p><a href="/redirectLogin/">Zaloguj się</a> lub <a href="/redirectRegister/">Zarejestruj się</a>, aby zobaczyć więcej.</p>
         {% endif %}
     </div>
+    <script>
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        
+        function loadCountries() {
+            const countryDropdown = document.getElementById('country');
+            const countryError = document.createElement('span');
+            countryError.style.color = 'red';
+            countryDropdown.parentNode.appendChild(countryError);
+
+            return fetch("/getcountries/")
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Nie udało się pobrać listy krajów");
+                    }
+                    return response.json();
+                })
+                .then(countries => {
+                    console.log(countries)
+                    countryDropdown.innerHTML = ''; // Wyczyść dropdown
+                    countries.forEach(country => {
+                        const option = document.createElement("option");
+                        option.value = country.code;
+                        option.textContent = country.country;
+                        if (country.country == "{{user.country}}") {
+                            option.selected = true;
+                        }
+                        countryDropdown.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error("Błąd pobierania krajów:", error);
+                    countryError.textContent = "Nie udało się załadować krajów.";
+                });
+
+                
+        }
+
+        document.getElementById('filters').addEventListener('submit', function(event) {
+            event.preventDefault(); 
+            loadHolidays()
+        })
+
+        function loadHolidays(){
+            const country = document.getElementById('country').value;
+            const public  = document.getElementById('public').checked;
+
+            const countryData = {
+                country: country,
+                public: public,
+               
+            };
+            
+            console.log('Wysłane dane:', JSON.stringify(countryData));
+
+            fetch('/monthHolidays/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify(countryData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Odpowiedź serwera:', data);
+                const holidaysList = document.getElementById('holidays-list');
+                holidaysList.innerHTML = '';  // Czyszczenie poprzednich danych
+                if (data.length > 0) {
+                    data.forEach(holiday => {
+                        const listItem = document.createElement('li');
+                        listItem.innerHTML = `<strong>${holiday.name}</strong> - ${holiday.date}`;
+                        holidaysList.appendChild(listItem);
+                    });
+                } else {
+                    holidaysList.innerHTML = '<li>Brak świąt do wyświetlenia.</li>';
+                }
+            })
+            
+            .catch(error => {
+                console.error('Błąd:', error);
+            });
+            
+        };
+
+
+        document.getElementById('addUserHoliday').addEventListener('submit', function(event) {
+            event.preventDefault(); 
+            console.log("test");
+            addUserHoliday();
+            loadUserHolidays();
+        })
+
+        function addUserHoliday(){
+            const date = document.getElementById('data').value;
+            const name  = document.getElementById('holiday').value;
+
+            const holidayData = {
+                name: name,
+                date: date,
+               
+            };
+            
+            console.log('Wysłane dane:', JSON.stringify(holidayData));
+
+            fetch('/addUserHoliday/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify(holidayData)
+            })
+            .then(response => response.json())      
+            .catch(error => {
+                console.error('Błąd:', error);
+            });
+            
+        };
+
+        function loadUserHolidays() {
+
+            fetch("/getUserHolidays/")
+                .then(response => {
+                    return response.json();
+                })
+                .then(data => {
+                console.log('Odpowiedź serwera:', data);
+                const holidaysList = document.getElementById('user-holidays-list');
+                holidaysList.innerHTML = '';
+                if (data.length > 0) {
+                    data.forEach(holiday => {
+                        const listItem = document.createElement('li');
+                        listItem.innerHTML = `<strong>${holiday.name}</strong> - ${holiday.date}
+                                            <button class="delete-btn" data-name="${holiday.name}" data-date="${holiday.date}">Usuń</button>`;
+                        holidaysList.appendChild(listItem);
+                    });
+
+                    document.querySelectorAll(".delete-btn").forEach(button => {
+                        button.addEventListener("click", function () {
+                            const holidayname = this.getAttribute('data-name');
+                            const holidaydate = this.getAttribute('data-date');
+                        deleteUserHoliday(holidayname,holidaydate);
+                    });
+         });
+                } else {
+                    holidaysList.innerHTML = '<li>Brak świąt do wyświetlenia.</li>';
+                }
+            })
+            
+            .catch(error => {
+                console.error('Błąd:', error);
+            });
+        }
+
+        
+
+        function deleteUserHoliday(holidayname,holidaydate) {
+            const holidayData = {
+                name: holidayname, 
+                date: holidaydate,
+            };
+            console.log(holidayData)
+            fetch('/deleteUserHoliday/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify(holidayData)
+            })
+            .then(response => response.json())
+            .then(loadUserHolidays)   
+            .catch(error => {
+                console.error('Błąd:', error);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            loadCountries().then(loadHolidays);
+            loadUserHolidays();
+        });
+    </script>
 </body>
 </html>

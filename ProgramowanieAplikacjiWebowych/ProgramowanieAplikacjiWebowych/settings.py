@@ -127,6 +127,11 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 AUTH_USER_MODEL = 'kalendarz.User'
+
+AUTHENTICATION_BACKENDS = [
+    'kalendarz.backends.EmailOrUsernameAuthBackend',  # Replace 'myapp' with your app name
+    'django.contrib.auth.backends.ModelBackend',    # Optional: Fallback for admin login, etc.
+]
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
