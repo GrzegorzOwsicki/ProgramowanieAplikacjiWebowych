@@ -43,7 +43,7 @@ def register(request):
             user_obj.set_password(user_password)
             user_obj.save()
             authLogin(request,user_obj,backend='kalendarz.backends.EmailOrUsernameAuthBackend')
-            return JsonResponse({'redirect_url': '/home/'}, status=200)
+            return JsonResponse({'redirect_url': '/'}, status=200)
         else:
             return JsonResponse(error, status=409)
     return JsonResponse({"error":"Method unallowed"},status = 405)
@@ -62,11 +62,11 @@ def login(request):
         if user:
             #user = User.objects.filter(username=login).filter(password=pass_word).get()
             authLogin(request,user,backend='kalendarz.backends.EmailOrUsernameAuthBackend')
-            return JsonResponse({'redirect_url': '/home/'}, status=200)
+            return JsonResponse({'redirect_url': '/'}, status=200)
         
         elif user: 
             authLogin(request,user,backend='kalendarz.backends.EmailOrUsernameAuthBackend')
-            return JsonResponse({'redirect_url': '/home/'}, status=200)
+            return JsonResponse({'redirect_url': '/'}, status=200)
         
         else:
             return JsonResponse({'error': "Incorect login or password"}, status=404)
@@ -97,16 +97,15 @@ def getMonthlyHolidays(request):
         country = data.get('country')
         country = Country.objects.get(code = country)
         public = data.get('public')
-        if country == "":
+        month = data.get('month')
+        if country == None:
             user = request.user
             country = Country.objects.get(code = user.country)
         today = datetime.now()
         if public:
-            dates = Holiday.objects.filter(date__year=today.year-1,date__month=today.month,country=country,public=public).values()
+            dates = Holiday.objects.filter(date__year=today.year-1,date__month=month,country=country,public=public).values()
         else:
-            dates = Holiday.objects.filter(date__year=today.year-1,date__month=today.month,country=country).values()
-        if len(dates) == 0:
-            dates = Holiday.objects.filter(date__year=today.year-1,date__month=today.month+1,country=country).values()
+            dates = Holiday.objects.filter(date__year=today.year-1,date__month=month,country=country).values()
         dates = list(dates)
         return JsonResponse(dates,safe=False,status=200)
     return JsonResponse({"error":"Method unallowed"},status = 405)
@@ -135,9 +134,7 @@ def addUserHoliday(request):
 
 @login_required
 def deleteUserHoliday(request):
-
     if request.method == 'POST':
-
         user = request.user
         data = json.loads(request.body.decode('utf-8'))
         name = data.get('name')

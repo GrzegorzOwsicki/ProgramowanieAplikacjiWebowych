@@ -8,10 +8,8 @@ import os
 load_dotenv()
 
 class Command(BaseCommand):
-
+    
     def handle(self, *args, **kwargs):
-
-
         countries = Country.objects.values_list("code")
         n = 0
         countriesString = ""
@@ -23,8 +21,7 @@ class Command(BaseCommand):
                 n = 0
                 countriestab.append(countriesString[0:-1])
                 countriesString = ""
-        
-
+    
         API_KEY =  os.environ.get('API_KEY')
         
         BASE_URL = 'https://holidayapi.com/v1/holidays'

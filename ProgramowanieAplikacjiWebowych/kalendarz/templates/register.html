@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Strona Rejestracji</title>
 
-    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <link rel="stylesheet" href="{% static 'login.css' %}">
 </head>
 <body>
     <div class="form-container">
@@ -24,13 +24,14 @@
                 <span id="emailError" style="color:red;"></span>
             </div>
             <div class="input-group">
-                <label for="password">Hasło</label>
+                <label for="password" pattern="">Hasło</label>
                 <input type="password" id="password1" name="password1" placeholder="Wpisz hasło" required>
+                <span id="passwordError1" style="color:red;"></span>
             </div>
             <div class="input-group">
                 <label for="password">Powtórz Hasło</label>
                 <input type="password" id="password2" name="password2" placeholder="Powtórz hasło" required>
-                <span id="passwordError" style="color:red;"></span>
+                <span id="passwordError2" style="color:red;"></span>
             </div>
 
             <div class="input-group">
@@ -40,7 +41,7 @@
                 </select>
             </div>
 
-            <button type="submit">Zarejestruj</button>
+            <button class="button" type="submit">Zarejestruj</button>
         </form>
     </div>
 
@@ -88,6 +89,18 @@
                 const password2 = document.getElementById('password2').value;
                 const country   = document.getElementById('country').value;
                 
+                regex = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$");
+                if (!regex.test(password1)){
+                    document.getElementById('passwordError1').textContent = "Hasło musi zawierać jedną małą literę jedną dużą literę oraz cyfrę";
+                    return
+                }
+                document.getElementById('passwordError1').textContent = "";
+                
+                if (password1 != password2){
+                    document.getElementById('passwordError2').textContent = "Hasła nie są takie same!";
+                    return
+                }
+                document.getElementById('passwordError2').textContent = "";
 
                 const registrationData = {
                     username: username,
@@ -96,10 +109,7 @@
                     country:  country,
                 };
                 
-                if (password1 != password2){
-                    document.getElementById('passwordError').textContent = "Hasła nie są takie same!";
-                    return
-                }
+                
 
                 console.log('Wysłane dane:', JSON.stringify(registrationData));
                 
@@ -118,9 +128,11 @@
                     if (data.username_in_use){
                         document.getElementById('usernameError').textContent = "Nazwa użytkownika jest juz zajeta";
                     }
+                    document.getElementById('usernameError').textContent = "";
                     if (data.email_in_use){
                         document.getElementById('emailError').textContent = "Email jest juz zajety";
                     }
+                    document.getElementById('emailError').textContent = "";
                     if (data.redirect_url) {
                     window.location.href = data.redirect_url;
                     }

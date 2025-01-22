@@ -11,7 +11,6 @@
     <div class="container">
         {% if user.is_authenticated %}
             <div class="auth-container">
-                <!-- Dane użytkownika -->
                 <div class="user-info">
                     <h2>Dane Użytkownika</h2>
                     <p><strong>Nazwa użytkownika:</strong> {{ user.username }}</p>
@@ -19,16 +18,31 @@
                     <p><strong>Kraj:</strong> {{ user.country }}</p>
                     <button><strong><a href="/logout/">Wyloguj</a></strong></button>
                 </div>
-
-                <!-- Lista świąt -->
                 <div class="holiday-list">
                     <h2>Lista Świąt</h2>
                     <label>Filtry</label>
                     <form id="filters">
                         {% csrf_token %}
                         <div class="input-group">
+                            <label for="month">Miesiąc</label>
+                            <select id="month" name="month">
+                                <option value="1">    Styczen</option>
+                                <option value="2">       Luty</option>
+                                <option value="3">     Marzec</option>
+                                <option value="4">   Kwiecień</option>
+                                <option value="5">        Maj</option>
+                                <option value="6">   Czerwiec</option>
+                                <option value="7">     Lipiec</option>
+                                <option value="8">   Sierpień</option>
+                                <option value="9">   Wrzesień</option>
+                                <option value="10">Październik</option>
+                                <option value="11">   Listopad</option>
+                                <option value="12">   Grudzień</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
                             <label for="country">Kraj</label>
-                            <select id="country" name="country" required>
+                            <select id="country" name="country"  required>
                                 <option value="">Ładowanie...</option>
                             </select>
                         </div>
@@ -40,7 +54,6 @@
                         <button type="submit">Filtruj</button>
                     </form>
                         <ul id="holidays-list">
-                            <!-- Lista świąt wczytana dynamicznie za pomocą JavaScript -->
                         </ul>
                 </div>
                 <div class="holiday-list">
@@ -49,7 +62,7 @@
                             {% csrf_token %}
                             <div class="input-group">
                                 <label for="holiday">Wydarzenie</label>
-                                <input type="text" id="holiday" name="holiday" placeholder="" required>
+                                <input type="text" id="holiday" name="holiday" placeholder="Wprowadź wydarzenie" required>
                             </div>
                             <div class="input-group">
                                 <label for="data">Data</label>
@@ -58,13 +71,16 @@
                             <button type="submit">Dodaj wydarzenie</button>
                         </form>
                         <ul id="user-holidays-list">
-                            <!-- Lista świąt wczytana dynamicznie za pomocą JavaScript -->
                         </ul>
                 </div>
             </div>
         {% else %}
-            <!-- Linki dla niezalogowanych użytkowników -->
-            <p><a href="/redirectLogin/">Zaloguj się</a> lub <a href="/redirectRegister/">Zarejestruj się</a>, aby zobaczyć więcej.</p>
+            <div>
+                <button class="button" onclick="location.href='/redirectLogin/'">Zaloguj się</button>
+            </div>
+            <div>
+                <button class="button" onclick="location.href='/redirectRegister/'">Zarejestruj się</button>
+            </div>
         {% endif %}
     </div>
     <script>
@@ -113,10 +129,12 @@
         function loadHolidays(){
             const country = document.getElementById('country').value;
             const public  = document.getElementById('public').checked;
+            const month = document.getElementById('month').value;
 
             const countryData = {
                 country: country,
                 public: public,
+                month:month,
                
             };
             
@@ -134,7 +152,7 @@
             .then(data => {
                 console.log('Odpowiedź serwera:', data);
                 const holidaysList = document.getElementById('holidays-list');
-                holidaysList.innerHTML = '';  // Czyszczenie poprzednich danych
+                holidaysList.innerHTML = '';
                 if (data.length > 0) {
                     data.forEach(holiday => {
                         const listItem = document.createElement('li');
@@ -151,7 +169,6 @@
             });
             
         };
-
 
         document.getElementById('addUserHoliday').addEventListener('submit', function(event) {
             event.preventDefault(); 
@@ -180,7 +197,8 @@
                 },
                 body: JSON.stringify(holidayData)
             })
-            .then(response => response.json())      
+            .then(response => response.json())
+            .then(loadUserHolidays)      
             .catch(error => {
                 console.error('Błąd:', error);
             });
@@ -188,7 +206,6 @@
         };
 
         function loadUserHolidays() {
-
             fetch("/getUserHolidays/")
                 .then(response => {
                     return response.json();
@@ -210,13 +227,13 @@
                             const holidayname = this.getAttribute('data-name');
                             const holidaydate = this.getAttribute('data-date');
                         deleteUserHoliday(holidayname,holidaydate);
+                        });
                     });
-         });
-                } else {
+                } 
+                else {
                     holidaysList.innerHTML = '<li>Brak świąt do wyświetlenia.</li>';
                 }
             })
-            
             .catch(error => {
                 console.error('Błąd:', error);
             });
@@ -248,6 +265,8 @@
         document.addEventListener('DOMContentLoaded', function () {
             loadCountries().then(loadHolidays);
             loadUserHolidays();
+            today = new Date()
+            document.getElementById("month").value = today.getMonth()+1;
         });
     </script>
 </body>
