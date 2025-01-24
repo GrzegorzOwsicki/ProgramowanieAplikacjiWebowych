@@ -20,7 +20,7 @@
             </div>
             <div class="input-group">
                 <label for="email">email</label>
-                <input type="email" id="email" name="email" placeholder="Wpisz hasło" required>
+                <input type="email" id="email" name="email" placeholder="Wpisz email" required>
                 <span id="emailError" style="color:red;"></span>
             </div>
             <div class="input-group">
@@ -88,9 +88,11 @@
                 const password1 = document.getElementById('password1').value;
                 const password2 = document.getElementById('password2').value;
                 const country   = document.getElementById('country').value;
-                
-                regex = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$");
-                if (!regex.test(password1)){
+                //(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}
+                const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+                console.log(password1)
+                console.log(regex.test(password1))
+                if (regex.test(password1) === false){
                     document.getElementById('passwordError1').textContent = "Hasło musi zawierać jedną małą literę jedną dużą literę oraz cyfrę";
                     return
                 }

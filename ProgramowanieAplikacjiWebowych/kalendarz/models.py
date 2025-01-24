@@ -46,11 +46,7 @@ class Country(models.Model):
         return self.country
 
 class User(AbstractUser):
-    username = models.CharField(max_length=150, unique=True)
-    email = models.EmailField(max_length=150,unique=True,null=True)
     country = models.ForeignKey(Country, on_delete=models.SET_NULL, blank=True,null=True)
-    is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=False)
 
     objects = CustomUserManager()
 
